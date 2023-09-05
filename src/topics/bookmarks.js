@@ -57,13 +57,27 @@ module.exports = function (Topics) {
     }
     function updateTopicBookmarks(tid, pids) {
         return __awaiter(this, void 0, void 0, function* () {
-            const maxIndex = yield Topics.postcount(tid);
+            // The next line calls a function in a module that has not been updated to TS yet
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+            const maxIndex = yield Topics.getPostCount(tid);
+            // The next line calls a function in a module that has not been updated to TS yet
+            // eslint-disable-next-line max-len
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const indices = yield database_1.default.sortedSetRanks(`tid:${tid}:posts`, pids);
             const postIndices = indices.map((i) => (i === null ? 0 : i + 1));
             const minIndex = Math.min(...postIndices);
-            const bookmarks = yield Topics.getTopicBookmarks(tid);
+            // The next line calls a function in a module that has not been updated to TS yet
+            // eslint-disable-next-line max-len
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+            const bookmarks = yield getTopicBookmarks(tid);
+            // The next line calls a function in a module that has not been updated to TS yet
+            // eslint-disable-next-line max-len
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const uidData = bookmarks.map(b => ({ uid: b.value, bookmark: parseInt(b.score, 10) }))
                 .filter(data => data.bookmark >= minIndex);
+            // The next line calls a function in a module that has not been updated to TS yet
+            // eslint-disable-next-line max-len
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             yield async_1.default.eachLimit(uidData, 50, (data) => __awaiter(this, void 0, void 0, function* () {
                 let bookmark = Math.min(data.bookmark, maxIndex);
                 postIndices.forEach((i) => {
@@ -77,9 +91,15 @@ module.exports = function (Topics) {
                     return;
                 }
                 const settings = yield user_1.default.getSettings(data.uid);
+                // The next line calls a function in a module that has not been updated to TS yet
+                // eslint-disable-next-line max-len
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                 if (settings.topicPostSort === 'most_votes') {
                     return;
                 }
+                // The next line calls a function in a module that has not been updated to TS yet
+                // eslint-disable-next-line max-len
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
                 yield Topics.setUserBookmark(tid, data.uid, bookmark);
             }));
         });
