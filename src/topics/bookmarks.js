@@ -11,7 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-Object.defineProperty(exports, "__esModule", { value: true });
 // The next line calls a function in a module that has not been updated to TS yet
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 const async_1 = __importDefault(require("async"));
@@ -21,8 +20,8 @@ const database_1 = __importDefault(require("../database"));
 // The next line calls a function in a module that has not been updated to TS yet
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 const user_1 = __importDefault(require("../user"));
-class Topics {
-    getUserBookmark(tid, uid) {
+module.exports = function (Topics) {
+    function getUserBookmark(tid, uid) {
         return __awaiter(this, void 0, void 0, function* () {
             if (parseInt(uid, 10) <= 0) {
                 return null;
@@ -32,7 +31,7 @@ class Topics {
             return yield database_1.default.sortedSetScore(`tid:${tid}:bookmarks`, uid);
         });
     }
-    getUserBookmarks(tids, uid) {
+    function getUserBookmarks(tids, uid) {
         return __awaiter(this, void 0, void 0, function* () {
             if (parseInt(uid, 10) <= 0) {
                 return tids.map(() => null);
@@ -42,23 +41,23 @@ class Topics {
             return yield database_1.default.sortedSetsScore(tids.map(tid => `tid:${tid}:bookmarks`), uid);
         });
     }
-    setUserBookmark(tid, uid, index) {
+    function setUserBookmark(tid, uid, index) {
         return __awaiter(this, void 0, void 0, function* () {
             // The next line calls a function in a module that has not been updated to TS yet
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             yield database_1.default.sortedSetAdd(`tid:${tid}:bookmarks`, index, uid);
         });
     }
-    getTopicBookmarks(tid) {
+    function getTopicBookmarks(tid) {
         return __awaiter(this, void 0, void 0, function* () {
             // The next line calls a function in a module that has not been updated to TS yet
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             return yield database_1.default.getSortedSetRangeWithScores(`tid:${tid}:bookmarks`, 0, -1);
         });
     }
-    updateTopicBookmarks(tid, pids) {
+    function updateTopicBookmarks(tid, pids) {
         return __awaiter(this, void 0, void 0, function* () {
-            const maxIndex = yield Topics.getPostCount(tid);
+            const maxIndex = yield Topics.postcount(tid);
             const indices = yield database_1.default.sortedSetRanks(`tid:${tid}:posts`, pids);
             const postIndices = indices.map((i) => (i === null ? 0 : i + 1));
             const minIndex = Math.min(...postIndices);
@@ -85,5 +84,4 @@ class Topics {
             }));
         });
     }
-}
-;
+};

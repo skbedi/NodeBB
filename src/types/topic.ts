@@ -41,6 +41,8 @@ interface Teaser {
 export type TopicObjectSlim = TopicSlimProperties & TopicSlimOptionalProperties;
 
 export type TopicSlimProperties = {
+  getTopicBookmarks(tid: number): unknown;
+  setUserBookmark(tid: number, uid: number, bookmark: number): unknown;
   tid: number;
   uid: number;
   cid: number;

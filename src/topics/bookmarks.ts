@@ -13,17 +13,18 @@ import db from '../database';
 import user from '../user';
 
 
-export async function (Topics) {
-    async getUserBookmark(tid : number, uid : string) {
+export = function (Topics) {
+    async function getUserBookmark(tid : number, uid : string): Promise<number | null> {
         if (parseInt(uid, 10) <= 0) {
             return null;
         }
+
         // The next line calls a function in a module that has not been updated to TS yet
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         return await db.sortedSetScore(`tid:${tid}:bookmarks`, uid);
     }
 
-    async  getUserBookmarks(tids: number[], uid: string) {
+    async function getUserBookmarks(tids: number[], uid: string): Promise<(number | null)[]> {
         if (parseInt(uid, 10) <= 0) {
             return tids.map(() => null);
         }
@@ -32,25 +33,25 @@ export async function (Topics) {
         return await db.sortedSetsScore(tids.map(tid => `tid:${tid}:bookmarks`), uid);
     }
 
-    async  setUserBookmark(tid : number, uid : string, index : string) {
+    async function setUserBookmark(tid : number, uid : string, index : string) {
         // The next line calls a function in a module that has not been updated to TS yet
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         await db.sortedSetAdd(`tid:${tid}:bookmarks`, index, uid);
     }
 
-    async  getTopicBookmarks(tid : number) {
+    async function getTopicBookmarks(tid : number) {
         // The next line calls a function in a module that has not been updated to TS yet
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         return await db.getSortedSetRangeWithScores(`tid:${tid}:bookmarks`, 0, -1);
     }
 
-    async  updateTopicBookmarks(tid : number, pids : number[]) {
-        const maxIndex: number = await Topics.getPostCount(tid);
+    async function updateTopicBookmarks(tid : number, pids : number[]) {
+        const maxIndex: number = await Topics.postcount(tid);
         const indices: number[] = await db.sortedSetRanks(`tid:${tid}:posts`, pids);
         const postIndices: number[] = indices.map((i: number) => (i === null ? 0 : i + 1));
         const minIndex: number = Math.min(...postIndices);
 
-        //const bookmarks = await Topics.getTopicBookmarks(tid);
+        const bookmarks = await Topics.getTopicBookmarks(tid);
 
         const uidData = bookmarks.map(b => ({ uid: b.value, bookmark: parseInt(b.score, 10) }))
             .filter(data => data.bookmark >= minIndex);
@@ -60,7 +61,7 @@ export async function (Topics) {
             }
 
             await async.eachLimit(uidData, 50, async (data:CustomData) => {
-               let bookmark = Math.min(data.bookmark, maxIndex);
+                let bookmark = Math.min(data.bookmark, maxIndex);
 
                 postIndices.forEach((i) => {
                     if (i < data.bookmark) {
@@ -74,6 +75,7 @@ export async function (Topics) {
                     return;
                 }
 
+
                 const settings = await user.getSettings(data.uid);
                 if (settings.topicPostSort === 'most_votes') {
                     return;
@@ -83,4 +85,3 @@ export async function (Topics) {
             });
     }
 };
-export default Topics;
